@@ -1,260 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#05090d">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02070d">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <title>Jarvis</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{display:flex;flex-direction:column;height:100dvh;background:radial-gradient(circle at 50% 12%,#0b2233,#05090d 70%);color:#bfefff;font-family:sans-serif}
-#top{text-align:center;padding:14px 0 6px}
-#core{width:110px;height:110px;margin:0 auto;border-radius:50%;border:3px solid #35d4ff;box-shadow:0 0 25px #35d4ff,inset 0 0 25px #35d4ff;position:relative;animation:pulse 3s ease-in-out infinite}
-#core:before{content:"";position:absolute;top:18px;left:18px;right:18px;bottom:18px;border-radius:50%;border:2px dashed #7be6ff;animation:spin 8s linear infinite}
-#core:after{content:"";position:absolute;top:42px;left:42px;right:42px;bottom:42px;border-radius:50%;background:#aef1ff;box-shadow:0 0 25px #aef1ff}
-#core.parla{animation:pulse .5s ease-in-out infinite}
-#core.ascolta{border-color:#7dffb0;box-shadow:0 0 30px #7dffb0,inset 0 0 25px #7dffb0}
-@keyframes pulse{50%{transform:scale(1.07);box-shadow:0 0 45px #35d4ff,inset 0 0 35px #35d4ff}}
-@keyframes spin{to{transform:rotate(360deg)}}
-#nome{letter-spacing:6px;font-size:14px;margin-top:10px;color:#7be6ff}
-#stato{font-size:13px;margin-top:4px;color:#7fb7c9;min-height:18px}
-#chat{flex:1;overflow-y:auto;padding:10px 14px}
-.m{margin:8px 0;padding:10px 12px;border-radius:10px;white-space:pre-wrap;line-height:1.4}
-.u{background:#123a5a;margin-left:36px;border:1px solid #1f6a9a}
-.j{background:rgba(20,50,70,.7);margin-right:36px;border:1px solid #1a5570}
-#barra{display:flex;gap:8px;padding:6px 8px 0;background:#04080c}
-form{display:flex;gap:8px;padding:8px;background:#04080c;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-input,select{padding:12px;font-size:16px;border-radius:8px;border:1px solid #1f6a9a;background:#0a1a26;color:#dff;min-width:0}
-#t{flex:1}
-button{padding:12px 14px;font-size:16px;border:0;border-radius:8px;background:#2a9df4;color:#fff}
-.s{background:#0a1a26;border:1px solid #1f6a9a}
-.attivo{background:#1f8a5a}
-#imp{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(2,6,10,.96);padding:20px;overflow-y:auto}
-#imp label{display:block;margin:14px 0 4px;font-size:14px;color:#7be6ff}
-#imp input,#imp select{width:100%}
-#imp .rig{display:flex;gap:8px;margin-top:20px}
-#imp p{font-size:13px;color:#7fb7c9;line-height:1.4}
+:root{--bg:#02070d;--c:#27d8ff;--txt:#cfefff;--dim:rgba(39,216,255,.22);--warn:#ffb54a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Segoe UI",Roboto,system-ui,sans-serif;overflow:hidden}
+#app{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);background:radial-gradient(ellipse at 50% 28%,#06202e 0%,var(--bg) 72%)}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--dim);font-size:11px;letter-spacing:.18em;color:var(--c)}
+.brand{font-weight:700;font-size:14px;letter-spacing:.35em}
+#stage{position:relative;flex:0 0 44%;min-height:200px}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#stato{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;letter-spacing:.3em;color:var(--c);text-shadow:0 0 8px var(--c)}
+#log{flex:1;overflow-y:auto;padding:8px 16px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--dim);scrollbar-width:thin}
+.m{max-width:88%;padding:8px 12px;border-radius:10px;font-size:15px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
+.m.tu{align-self:flex-end;background:rgba(39,216,255,.12);border:1px solid var(--dim)}
+.m.jv{align-self:flex-start;background:rgba(5,25,38,.85);border:1px solid rgba(39,216,255,.4);box-shadow:0 0 12px rgba(39,216,255,.08)}
+.m.sys{align-self:center;font-size:12px;color:var(--warn);text-align:center}
+#barra{padding:8px 12px 10px;border-top:1px solid var(--dim);background:rgba(2,10,16,.9)}
+#riga{display:flex;gap:8px;margin-bottom:10px}
+#testo{flex:1;min-width:0;background:rgba(39,216,255,.06);border:1px solid var(--dim);border-radius:22px;padding:10px 16px;color:var(--txt);font-size:16px;outline:none}
+#testo:focus{border-color:var(--c)}
+button{font:inherit;color:var(--c);background:rgba(39,216,255,.06);border:1px solid var(--dim);cursor:pointer}
+#invia{width:44px;height:44px;border-radius:50%;font-size:18px}
+#tasti{display:flex;justify-content:center;align-items:center;gap:18px}
+.t{width:46px;height:46px;border-radius:50%;font-size:20px;display:grid;place-items:center}
+.t.on{background:rgba(39,216,255,.25);border-color:var(--c);box-shadow:0 0 14px var(--c)}
+#mic{width:68px;height:68px;border-radius:50%;font-size:28px;border-width:2px;border-color:var(--c);box-shadow:0 0 18px rgba(39,216,255,.35)}
+#mic.on{background:rgba(39,216,255,.3);box-shadow:0 0 28px var(--c)}
+#setup{position:fixed;inset:0;background:rgba(2,7,13,.96);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+#setup.aperto{display:flex}
+.box{width:100%;max-width:420px;border:1px solid var(--c);border-radius:14px;padding:20px;background:#04121b;box-shadow:0 0 30px rgba(39,216,255,.15)}
+.box h2{margin:0 0 14px;font-size:15px;letter-spacing:.25em;color:var(--c)}
+.box label{display:block;font-size:12px;margin:12px 0 4px;color:#8fd9ee}
+.box input,.box select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--dim);background:rgba(39,216,255,.06);color:var(--txt);font-size:16px}
+.box .az{display:flex;gap:8px;margin-top:16px}
+.box .az button{flex:1;padding:11px;border-radius:8px;font-size:14px}
+.box .az .pri{background:var(--c);color:#02121a;font-weight:700}
+.nota{font-size:11px;color:#7fb3c4;margin-top:12px;line-height:1.4}
 </style>
 </head>
 <body>
-<div id="top">
-  <div id="core"></div>
-  <div id="nome">J.A.R.V.I.S.</div>
-  <div id="stato">Pronto</div>
+<div id="app">
+  <header><span class="brand">JARVIS</span><span id="neur">ATTIVITÀ NEURALE 0%</span></header>
+  <section id="stage"><canvas id="cv"></canvas><div id="stato">SISTEMI ONLINE</div></section>
+  <section id="log" aria-live="polite"></section>
+  <div id="barra">
+    <form id="riga" autocomplete="off">
+      <input id="testo" type="text" placeholder="Scrivi a Jarvis…" enterkeyhint="send">
+      <button id="invia" type="submit" aria-label="Invia">➤</button>
+    </form>
+    <div id="tasti">
+      <button class="t" id="imp" type="button" aria-label="Impostazioni">⚙</button>
+      <button class="t" id="ear" type="button" aria-label="Ehi Jarvis">👂</button>
+      <button id="mic" type="button" aria-label="Microfono">🎤</button>
+      <button class="t" id="vol" type="button" aria-label="Volume">🔊</button>
+    </div>
+  </div>
 </div>
-<div id="chat"></div>
-<div id="barra">
-  <button type="button" class="s" id="bImp" title="Impostazioni">⚙</button>
-  <button type="button" class="s" id="bVoce" title="Voce on/off">🔊</button>
-  <button type="button" class="s" id="bAscolto" title="Ascolto Ehi Jarvis">👂 Ehi Jarvis</button>
-</div>
-<form id="f">
-  <button type="button" class="s" id="bMic">🎤</button>
-  <input id="t" autocomplete="off" enterkeyhint="send" placeholder="Scrivi o parla a Jarvis...">
-  <button>Invia</button>
-</form>
 
-<div id="imp">
-  <h2>Impostazioni</h2>
-  <p>Questi dati restano solo su questo telefono. Non vengono salvati nel sito.</p>
-  <label for="iUrl">URL dell'applicazione web (Apps Script)</label>
-  <input id="iUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
-  <label for="iPw">Password di Jarvis</label>
-  <input id="iPw" type="password" autocomplete="off">
-  <label for="iVoce">Voce</label>
-  <select id="iVoce"></select>
-  <div class="rig">
-    <button type="button" id="bSalva">Salva</button>
-    <button type="button" class="s" id="bChiudi">Chiudi</button>
+<div id="setup">
+  <div class="box">
+    <h2>IMPOSTAZIONI</h2>
+    <label for="url">URL dello script (applicazione web)</label>
+    <input id="url" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+    <label for="pwd">Password</label>
+    <input id="pwd" type="password" autocomplete="off">
+    <label for="voce">Voce</label>
+    <select id="voce"></select>
+    <div class="az">
+      <button type="button" id="prova">Prova voce</button>
+      <button type="button" id="salva" class="pri">Salva</button>
+    </div>
+    <div class="nota">URL e password restano salvati solo in questo browser, su questo telefono.</div>
   </div>
 </div>
 
 <script>
-(function(){
-var $=function(i){return document.getElementById(i);};
-var cfg={url:'',pw:''};
-try{cfg.url=localStorage.getItem('j_url')||'';cfg.pw=localStorage.getItem('j_pw')||'';}catch(e){}
+const $=id=>document.getElementById(id);
+const CFG_KEY='jarvis_cfg_v1';
+let cfg={url:'',pwd:'',voce:''};
+try{cfg=Object.assign(cfg,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'))}catch(e){}
+function salvaCfg(){try{localStorage.setItem(CFG_KEY,JSON.stringify(cfg))}catch(e){}}
 
-var voceOn=true, voci=[], parlando=false, modoAscolto=false, inAttesa=false, rec=null, wl=null;
-var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+/* ---------- STATO ---------- */
+const ETICHETTE={idle:'SISTEMI ONLINE',ascolto:'IN ASCOLTO',pensa:'ELABORAZIONE',parla:'RISPONDO'};
+let stato='idle';
+function setStato(s){stato=s;$('stato').textContent=ETICHETTE[s];$('mic').classList.toggle('on',s==='ascolto')}
 
-function setStato(t){$('stato').textContent=t;}
-function add(c,t){
-  var d=document.createElement('div');
-  d.className='m '+c;d.textContent=t;
-  var ch=$('chat');ch.appendChild(d);ch.scrollTop=ch.scrollHeight;
-  return d;
-}
-
-/* ---------- Voce (sintesi) ---------- */
-function caricaVoci(){
-  voci=speechSynthesis.getVoices().filter(function(v){return v.lang&&v.lang.toLowerCase().indexOf('it')===0;});
-  var s=$('iVoce');s.innerHTML='';
-  var salvata='';
-  try{salvata=localStorage.getItem('j_voce')||'';}catch(e){}
-  voci.forEach(function(v,i){
-    var o=document.createElement('option');
-    o.value=v.name;o.textContent='Voce '+(i+1)+' - '+v.name;
-    if(v.name===salvata)o.selected=true;
-    s.appendChild(o);
-  });
-}
-if('speechSynthesis' in window){caricaVoci();speechSynthesis.onvoiceschanged=caricaVoci;}
-function vocePreferita(){
-  var nome=$('iVoce').value;
-  return voci.filter(function(v){return v.name===nome;})[0]||voci[0]||null;
-}
-function parla(t){
-  if(!voceOn||!('speechSynthesis' in window))return;
-  speechSynthesis.cancel();
-  if(modoAscolto)fermaRec();
-  var u=new SpeechSynthesisUtterance(String(t).replace(/[*_#]/g,''));
-  var v=vocePreferita();if(v)u.voice=v;
-  u.lang='it-IT';u.pitch=1;u.rate=1.1;
-  var fine=function(){
-    parlando=false;$('core').className=modoAscolto?'ascolta':'';
-    if(modoAscolto)avviaRec(true);
-  };
-  u.onstart=function(){parlando=true;$('core').className='parla';};
-  u.onend=fine;u.onerror=fine;
-  speechSynthesis.speak(u);
+function msg(chi,testo){
+  const d=document.createElement('div');d.className='m '+chi;d.textContent=testo;
+  const l=$('log');l.appendChild(d);l.scrollTop=l.scrollHeight;
 }
 
-/* ---------- Chiamata a Jarvis ---------- */
-async function chiedi(q){
-  var r=await fetch(cfg.url,{method:'POST',body:JSON.stringify({password:cfg.pw,domanda:q})});
-  var j=await r.json();
-  if(!j.ok)throw new Error(j.errore||'Errore sconosciuto');
-  return j.risposta;
-}
-async function invia(q){
-  q=(q||'').trim();if(!q)return;
-  if(!cfg.url||!cfg.pw){apriImp();return;}
-  add('u',q);
-  var w=add('j','...');
-  setStato('Penso...');
+/* ---------- CHIAMATA ALLO SCRIPT ----------
+   Se la tua doPost aspetta campi diversi, si cambia solo qui. */
+async function chiedi(testo){
+  testo=(testo||'').trim();if(!testo)return;
+  msg('tu',testo);
+  if(!cfg.url||!cfg.pwd){msg('sys','Inserisci prima URL e password nelle impostazioni.');apriSetup();return}
+  setStato('pensa');
   try{
-    var r=await chiedi(q);
-    w.textContent=r;parla(r);
+    const r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({password:cfg.pwd,domanda:testo})});
+    const raw=await r.text();let ris=raw;
+    try{const j=JSON.parse(raw);ris=j.risposta||j.reply||j.testo||j.answer||j.errore||j.error||raw}catch(e){}
+    ris=String(ris).trim()||'Nessuna risposta.';
+    msg('jv',ris);parla(ris);
   }catch(e){
-    w.textContent='Errore: '+e.message;
+    msg('sys','Errore di connessione allo script.');setStato('idle');riprendi();
   }
-  setStato(modoAscolto?'In ascolto: di\' "Ehi Jarvis"':'Pronto');
 }
 
-/* ---------- Riconoscimento vocale ---------- */
-function fermaRec(){
-  if(rec){var r=rec;rec=null;r.onend=null;r.onerror=null;try{r.abort();}catch(e){}}
-}
-function gestisciAscolto(t){
-  var m=t.match(/(?:j|g|gi)arvis/i);
-  if(m){
-    var cmd=t.slice(m.index+m[0].length).replace(/^[\s,.:!?]+/,'').trim();
-    if(cmd){inAttesa=false;invia(cmd);}
-    else{inAttesa=true;parla('Dimmi.');}
-  }else if(inAttesa){
-    inAttesa=false;invia(t);
-  }
-}
-function avviaRec(continuo){
-  if(!SR){alert('Questo browser non supporta il riconoscimento vocale. Usa Chrome.');return;}
+/* ---------- VOCE (TTS) ---------- */
+let muto=false,tokVoce=0;
+function parla(testo){
   fermaRec();
-  var r=new SR();
-  rec=r;
-  r.lang='it-IT';r.continuous=continuo;r.interimResults=false;
-  r.onresult=function(ev){
-    var t=ev.results[ev.results.length-1][0].transcript.trim();
-    if(!t)return;
-    if(continuo)gestisciAscolto(t);else invia(t);
+  if(muto||!window.speechSynthesis){setStato('idle');riprendi();return}
+  speechSynthesis.cancel();
+  const tok=++tokVoce;
+  const pezzi=testo.replace(/[*_`#>]/g,'').match(/[^.!?\n]+[.!?]*/g)||[testo];
+  const voce=speechSynthesis.getVoices().find(v=>v.name===cfg.voce);
+  let i=0;
+  const next=()=>{
+    if(tok!==tokVoce)return;
+    if(i>=pezzi.length){setStato('idle');riprendi();return}
+    const p=pezzi[i++].trim();if(!p){next();return}
+    const u=new SpeechSynthesisUtterance(p);u.lang='it-IT';if(voce)u.voice=voce;
+    u.onstart=()=>{if(tok===tokVoce)setStato('parla')};u.onend=next;u.onerror=next;
+    speechSynthesis.speak(u);
   };
-  r.onerror=function(ev){
-    if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){
-      modoAscolto=false;aggiornaAscolto();setStato('Microfono non consentito');
+  next();
+}
+
+/* ---------- ASCOLTO (microfono e "Ehi Jarvis") ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,modoRec=null,wake=false,attesa=false,tAttesa=null;
+function fermaRec(){if(rec){rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort()}catch(e){}rec=null}modoRec=null}
+function riprendi(){if(wake&&stato==='idle')avvia('wake')}
+function avvia(modo){
+  if(!SR){msg('sys','Riconoscimento vocale non supportato: apri Jarvis con Chrome.');wake=false;agg();return}
+  fermaRec();modoRec=modo;
+  const r=new SR();rec=r;r.lang='it-IT';r.interimResults=false;r.continuous=(modo==='wake');
+  r.onstart=()=>{if(modo==='mic')setStato('ascolto')};
+  r.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal)continue;
+      const t=e.results[i][0].transcript.trim();
+      if(modo==='mic'){fermaRec();chiedi(t);return}
+      if(attesa){attesa=false;clearTimeout(tAttesa);fermaRec();chiedi(t);return}
+      const k=t.toLowerCase().indexOf('jarvis');
+      if(k>=0){
+        const resto=t.slice(k+6).replace(/^[\s,.!?:;-]+/,'');
+        if(resto.length>2){fermaRec();chiedi(resto);return}
+        attesa=true;setStato('ascolto');
+        clearTimeout(tAttesa);tAttesa=setTimeout(()=>{attesa=false;if(stato==='ascolto')setStato('idle')},8000);
+      }
     }
   };
-  r.onend=function(){
+  r.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      wake=false;agg();fermaRec();setStato('idle');msg('sys','Microfono bloccato: consenti il permesso al sito in Chrome.');
+    }
+  };
+  r.onend=()=>{
     if(rec!==r)return;
-    if(continuo&&modoAscolto&&!parlando){
-      setTimeout(function(){if(modoAscolto&&!parlando)avviaRec(true);},300);
-    }else if(!continuo){
-      setStato(modoAscolto?'In ascolto: di\' "Ehi Jarvis"':'Pronto');
-    }
+    if(modo==='wake'&&wake){setTimeout(()=>{if(rec===r&&wake)avvia('wake')},300)}
+    else{rec=null;if(stato==='ascolto'&&!attesa)setStato('idle');riprendi()}
   };
-  try{
-    r.start();
-    setStato(continuo?'In ascolto: di\' "Ehi Jarvis"':'Ti ascolto...');
-  }catch(e){}
-}
-async function schermoAcceso(on){
-  try{
-    if(on&&navigator.wakeLock){wl=await navigator.wakeLock.request('screen');}
-    else if(wl){await wl.release();wl=null;}
-  }catch(e){}
-}
-document.addEventListener('visibilitychange',function(){
-  if(document.visibilityState==='visible'&&modoAscolto)schermoAcceso(true);
-});
-function aggiornaAscolto(){
-  $('bAscolto').className=modoAscolto?'attivo':'s';
-  $('core').className=modoAscolto&&!parlando?'ascolta':$('core').className;
-  if(!modoAscolto&&!parlando)$('core').className='';
+  try{r.start()}catch(e){}
 }
 
-/* ---------- Impostazioni ---------- */
-function apriImp(){
-  $('iUrl').value=cfg.url;$('iPw').value=cfg.pw;
-  $('imp').style.display='block';
-}
+/* ---------- PULSANTI ---------- */
+function agg(){$('ear').classList.toggle('on',wake);$('vol').textContent=muto?'🔇':'🔊';$('vol').classList.toggle('on',muto)}
+$('mic').onclick=()=>{
+  if(stato==='ascolto'){fermaRec();setStato('idle');riprendi();return}
+  speechSynthesis&&speechSynthesis.cancel();tokVoce++;avvia('mic');
+};
+$('ear').onclick=()=>{
+  wake=!wake;agg();attesa=false;
+  if(wake){msg('sys','Dì "Ehi Jarvis" seguito dalla domanda. Tieni lo schermo acceso.');setStato('idle');avvia('wake')}
+  else{fermaRec();setStato('idle')}
+};
+$('vol').onclick=()=>{
+  muto=!muto;agg();
+  if(muto){tokVoce++;speechSynthesis&&speechSynthesis.cancel();if(stato==='parla'){setStato('idle');riprendi()}}
+};
+$('riga').onsubmit=e=>{e.preventDefault();const v=$('testo').value;$('testo').value='';chiedi(v)};
 
-/* ---------- Eventi ---------- */
-$('f').addEventListener('submit',function(e){
-  e.preventDefault();
-  var i=$('t');var q=i.value;i.value='';invia(q);
-});
-$('bMic').addEventListener('click',function(){
-  if(modoAscolto){modoAscolto=false;aggiornaAscolto();schermoAcceso(false);}
-  avviaRec(false);
-});
-$('bVoce').addEventListener('click',function(){
-  voceOn=!voceOn;
-  $('bVoce').textContent=voceOn?'🔊':'🔇';
-  if(!voceOn&&'speechSynthesis' in window)speechSynthesis.cancel();
-  else parla('Voce attiva.');
-});
-$('bAscolto').addEventListener('click',function(){
-  modoAscolto=!modoAscolto;
-  aggiornaAscolto();
-  if(modoAscolto){
-    schermoAcceso(true);
-    avviaRec(true);
-    parla('Ascolto attivo. Chiamami quando vuoi.');
-  }else{
-    fermaRec();schermoAcceso(false);setStato('Pronto');
+/* ---------- IMPOSTAZIONI ---------- */
+function popolaVoci(){
+  if(!window.speechSynthesis)return;
+  const sel=$('voce'),vs=speechSynthesis.getVoices();
+  const it=vs.filter(v=>(v.lang||'').toLowerCase().startsWith('it'));
+  const lista=it.length?it:vs;sel.innerHTML='';
+  lista.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});
+  if(cfg.voce)sel.value=cfg.voce;
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=popolaVoci;popolaVoci()}
+function apriSetup(){$('url').value=cfg.url;$('pwd').value=cfg.pwd;popolaVoci();$('setup').classList.add('aperto')}
+$('imp').onclick=apriSetup;
+$('salva').onclick=()=>{
+  cfg.url=$('url').value.trim();cfg.pwd=$('pwd').value;cfg.voce=$('voce').value;salvaCfg();
+  $('setup').classList.remove('aperto');
+};
+$('prova').onclick=()=>{
+  if(!window.speechSynthesis)return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance('Sistemi online.');u.lang='it-IT';
+  const v=speechSynthesis.getVoices().find(x=>x.name===$('voce').value);if(v)u.voice=v;speechSynthesis.speak(u);
+};
+
+/* ---------- GRAFICA: nucleo, anelli, neuroni ---------- */
+const cv=$('cv'),cx=cv.getContext('2d');
+let W=0,H=0,R=0;
+function ridim(){
+  const dpr=Math.min(window.devicePixelRatio||1,2),b=cv.getBoundingClientRect();
+  W=b.width;H=b.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);
+  cx.setTransform(dpr,0,0,dpr,0,0);R=Math.min(W,H)*0.5;
+}
+addEventListener('resize',ridim);
+if(window.ResizeObserver)new ResizeObserver(ridim).observe(cv);
+ridim();
+
+const TUNING={idle:{h:192,e:.35},ascolto:{h:150,e:.7},pensa:{h:38,e:.9},parla:{h:188,e:1}};
+let hue=192,en=.35,ang=0;
+const N=54,nodi=[];
+for(let i=0;i<N;i++){
+  const u=Math.random()*2-1,a=Math.random()*Math.PI*2,s=Math.sqrt(1-u*u),rad=.62+Math.random()*.5;
+  nodi.push({x:s*Math.cos(a)*rad,y:u*rad,z:s*Math.sin(a)*rad,f:0});
+}
+function arco(X,Y,r,a0,a1,w,col){cx.beginPath();cx.arc(X,Y,r,a0,a1);cx.lineWidth=w;cx.strokeStyle=col;cx.stroke()}
+
+function frame(t){
+  requestAnimationFrame(frame);
+  if(!W||!H)return;
+  const T=TUNING[stato];hue+=(T.h-hue)*.05;en+=(T.e-en)*.05;
+  ang+=0.002+0.007*en;
+  const col=(a,l)=>`hsla(${hue},100%,${l||60}%,${a})`;
+  const X=W/2,Y=H/2,U=R*.8;
+  const voce=stato==='parla'?(0.5+0.5*Math.sin(t/70)*Math.sin(t/230+1)):0;
+  cx.clearRect(0,0,W,H);
+
+  // alone e nucleo
+  const rc=U*(.14+.03*en+.06*voce);
+  let g=cx.createRadialGradient(X,Y,0,X,Y,U*.75);
+  g.addColorStop(0,col(.5*en+.1,70));g.addColorStop(.35,col(.12+.1*en,50));g.addColorStop(1,col(0,50));
+  cx.fillStyle=g;cx.beginPath();cx.arc(X,Y,U*.75,0,6.283);cx.fill();
+  g=cx.createRadialGradient(X,Y,0,X,Y,rc);
+  g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.4,col(.9,75));g.addColorStop(1,col(.1,50));
+  cx.fillStyle=g;cx.beginPath();cx.arc(X,Y,rc,0,6.283);cx.fill();
+
+  // anelli
+  cx.save();cx.shadowBlur=10;cx.shadowColor=col(.9);
+  cx.setLineDash([]);arco(X,Y,U*.22,0,6.283,1.5,col(.5));
+  cx.setLineDash([40,12]);cx.lineDashOffset=-ang*400;arco(X,Y,U*.32,0,6.283,2,col(.75));
+  cx.setLineDash([5,9]);cx.lineDashOffset=ang*300;arco(X,Y,U*.46,0,6.283,1.5,col(.6));
+  cx.setLineDash([]);
+  for(let k=0;k<3;k++){const a0=ang*1.6+k*2.0944;arco(X,Y,U*.62,a0,a0+1.0,3,col(.85))}
+  arco(X,Y,U*.70,0,6.283,1,col(.15));
+  cx.restore();
+  // tacche
+  cx.save();cx.translate(X,Y);cx.rotate(-ang);cx.strokeStyle=col(.5);
+  for(let i=0;i<72;i++){
+    const a=i/72*6.283,l=i%6===0?U*.07:U*.035,r1=U*.78;
+    cx.lineWidth=i%6===0?1.6:.8;cx.beginPath();
+    cx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1);cx.lineTo(Math.cos(a)*(r1+l),Math.sin(a)*(r1+l));cx.stroke();
   }
-});
-$('bImp').addEventListener('click',apriImp);
-$('bChiudi').addEventListener('click',function(){$('imp').style.display='none';});
-$('bSalva').addEventListener('click',function(){
-  cfg.url=$('iUrl').value.trim();cfg.pw=$('iPw').value;
-  try{
-    localStorage.setItem('j_url',cfg.url);
-    localStorage.setItem('j_pw',cfg.pw);
-    localStorage.setItem('j_voce',$('iVoce').value);
-  }catch(e){}
-  $('imp').style.display='none';
-  parla('Impostazioni salvate.');
-});
+  cx.restore();
 
-add('j','Eccomi! Sistemi online. Che si fa oggi?');
-if(!cfg.url||!cfg.pw)apriImp();
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
+  // neuroni
+  const ca=Math.cos(ang),sa=Math.sin(ang),tilt=.35,ct=Math.cos(tilt),st=Math.sin(tilt);
+  if(Math.random()<.02+.14*en){nodi[(Math.random()*N)|0].f=1}
+  const P=nodi.map(n=>{
+    const x1=n.x*ca+n.z*sa,z1=-n.x*sa+n.z*ca;
+    const y2=n.y*ct-z1*st,z2=n.y*st+z1*ct;
+    const p=1.8/(1.8-z2);
+    n.f*=.94;
+    return {x:X+x1*U*p,y:Y+y2*U*p,p:p,f:n.f,ox:x1,oy:y2,oz:z2};
+  });
+  cx.lineWidth=1;
+  for(let i=0;i<N;i++){
+    for(let j=i+1;j<N;j++){
+      const dx=P[i].ox-P[j].ox,dy=P[i].oy-P[j].oy,dz=P[i].oz-P[j].oz;
+      const d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+      if(d<.55){
+        const a=(1-d/.55)*(.12+.3*en)+Math.max(P[i].f,P[j].f)*.5;
+        cx.strokeStyle=col(Math.min(a,.9));cx.beginPath();cx.moveTo(P[i].x,P[i].y);cx.lineTo(P[j].x,P[j].y);cx.stroke();
+      }
+    }
+  }
+  for(let i=0;i<N;i++){
+    const q=P[i],r=(1.4+q.f*3.2)*q.p;
+    cx.fillStyle=col(Math.min(.45+q.f+.2*en,1),70);cx.beginPath();cx.arc(q.x,q.y,r,0,6.283);cx.fill();
+  }
 }
-})();
+requestAnimationFrame(frame);
+setInterval(()=>{$('neur').textContent='ATTIVITÀ NEURALE '+Math.min(99,Math.round(en*70+Math.random()*9))+'%'},400);
+
+/* ---------- AVVIO ---------- */
+agg();msg('sys','Sistemi online.');
+if(!cfg.url||!cfg.pwd)apriSetup();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
