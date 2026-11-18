@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jarvis</title>
+<style>
+:root{--bg:#010509;--h:192;--c:hsl(var(--h),100%,58%);--c2:hsla(var(--h),100%,58%,.35);--c3:hsla(var(--h),100%,58%,.12);--txt:#d6f3ff;--dim:#6fa9bd;--warn:#ffb54a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Segoe UI",Roboto,system-ui,sans-serif;overflow:hidden;cursor:default}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px);pointer-events:none;z-index:50;mix-blend-mode:overlay}
+body::after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.75) 100%);pointer-events:none;z-index:49}
+#bg{position:fixed;inset:0;width:100%;height:100%}
+#hud{position:fixed;inset:0;display:grid;grid-template-columns:minmax(260px,24vw) 1fr minmax(300px,26vw);grid-template-rows:54px 1fr 64px;gap:14px;padding:14px 18px;z-index:5;transition:opacity 1s}
+#hud.nascosto{opacity:0}
+.top,.bot{grid-column:1/4;display:flex;align-items:center;justify-content:space-between}
+.top{border-bottom:1px solid var(--c2);position:relative}
+.top::after{content:"";position:absolute;left:0;bottom:-1px;width:180px;height:2px;background:var(--c);box-shadow:0 0 12px var(--c)}
+.logo{font-size:22px;font-weight:800;letter-spacing:.7em;color:var(--c);text-shadow:0 0 18px var(--c)}
+.logo small{font-size:10px;font-weight:400;letter-spacing:.3em;color:var(--dim);margin-left:18px}
+.ora{text-align:right;font-variant-numeric:tabular-nums}
+.ora b{font-size:24px;font-weight:300;letter-spacing:.12em;color:var(--c)}
+.ora span{display:block;font-size:10px;letter-spacing:.25em;color:var(--dim);text-transform:uppercase}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.pan{position:relative;border:1px solid var(--c2);background:linear-gradient(180deg,rgba(6,28,40,.55),rgba(2,12,18,.55));backdrop-filter:blur(6px);padding:12px 14px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.pan::before,.pan::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--c)}
+.pan::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+.pan::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+.pan h3{margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:.3em;color:var(--c);display:flex;justify-content:space-between}
+.pan h3 i{font-style:normal;color:var(--dim)}
+.grow{flex:1;min-height:0;display:flex;flex-direction:column}
+.riga{display:flex;justify-content:space-between;font-size:12px;margin:6px 0 3px;color:var(--dim);letter-spacing:.08em}
+.riga b{color:var(--txt);font-weight:500;font-variant-numeric:tabular-nums}
+.barra{height:5px;background:var(--c3);position:relative;overflow:hidden}
+.barra>div{position:absolute;inset:0 auto 0 0;width:50%;background:linear-gradient(90deg,var(--c2),var(--c));box-shadow:0 0 10px var(--c);transition:width .8s}
+#spark{width:100%;height:46px;display:block;margin-top:6px}
+#reg{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.55;color:#8fd3e6;overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end}
+#reg div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+#reg div span{color:var(--c)}
+.centro{position:relative;min-height:0;display:flex;align-items:center;justify-content:center}
+#core{width:100%;height:100%;display:block}
+#statoBig{position:absolute;left:0;right:0;bottom:2%;text-align:center;font-size:13px;letter-spacing:.7em;color:var(--c);text-shadow:0 0 14px var(--c);padding-left:.7em}
+#sotto{position:absolute;left:0;right:0;bottom:-2%;text-align:center;font-size:10px;letter-spacing:.3em;color:var(--dim)}
+#chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--c2) transparent}
+.m{font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;padding:8px 11px;border-left:2px solid var(--c);background:rgba(39,216,255,.05)}
+.m small{display:block;font-size:9px;letter-spacing:.3em;color:var(--dim);margin-bottom:3px}
+.m.tu{border-left-color:#fff;background:rgba(255,255,255,.05)}
+.m.sys{border-left-color:var(--warn);color:var(--warn);font-size:12px}
+.bot{border-top:1px solid var(--c2);gap:14px;padding-top:10px}
+#form{flex:1;display:flex;gap:10px}
+#testo{flex:1;background:rgba(39,216,255,.05);border:1px solid var(--c2);padding:0 18px;height:44px;color:var(--txt);font-size:15px;outline:none;letter-spacing:.03em}
+#testo:focus{border-color:var(--c);box-shadow:0 0 16px var(--c3)}
+button{font:inherit;color:var(--c);background:rgba(39,216,255,.05);border:1px solid var(--c2);cursor:pointer;height:44px;padding:0 16px;letter-spacing:.2em;font-size:11px;transition:.15s}
+button:hover{background:var(--c3);border-color:var(--c);box-shadow:0 0 14px var(--c3)}
+button.on{background:var(--c);color:#001018;font-weight:700;box-shadow:0 0 20px var(--c)}
+#mic{min-width:130px}
+.hint{font-size:10px;color:var(--dim);letter-spacing:.15em;white-space:nowrap}
+.hint kbd{border:1px solid var(--c2);padding:1px 6px;color:var(--c);font-family:inherit}
+#setup{position:fixed;inset:0;background:rgba(1,5,9,.9);display:none;align-items:center;justify-content:center;z-index:60}
+#setup.aperto{display:flex}
+.box{width:min(460px,92vw);border:1px solid var(--c);background:#03101a;padding:26px;box-shadow:0 0 50px var(--c3)}
+.box h2{margin:0 0 6px;font-size:13px;letter-spacing:.4em;color:var(--c)}
+.box label{display:block;font-size:10px;letter-spacing:.2em;margin:16px 0 5px;color:var(--dim)}
+.box input,.box select{width:100%;height:40px;padding:0 12px;background:rgba(39,216,255,.05);border:1px solid var(--c2);color:var(--txt);font-size:14px;outline:none}
+.box input:focus,.box select:focus{border-color:var(--c)}
+.az{display:flex;gap:10px;margin-top:22px}
+.az button{flex:1}
+.nota{font-size:10px;color:var(--dim);margin-top:14px;line-height:1.5}
+#boot{position:fixed;inset:0;z-index:70;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity 1s}
+#boot.via{opacity:0;pointer-events:none}
+#boot .t{font-size:34px;font-weight:800;letter-spacing:.9em;color:var(--c);text-shadow:0 0 24px var(--c);padding-left:.9em}
+#boot .b{width:340px;height:3px;background:var(--c3)}
+#boot .b div{height:100%;width:0;background:var(--c);box-shadow:0 0 12px var(--c)}
+#boot .l{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--dim);height:14px;letter-spacing:.1em}
+@media(max-width:1000px){#hud{grid-template-columns:1fr;grid-template-rows:54px 1fr 64px}.top,.bot{grid-column:1}.col.sx{display:none}.hint{display:none}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div id="boot"><div class="t">JARVIS</div><div class="b"><div id="bootBar"></div></div><div class="l" id="bootL">AVVIO SISTEMI</div></div>
+
+<div id="hud" class="nascosto">
+  <div class="top">
+    <div class="logo">JARVIS<small>ASSISTENTE PERSONALE · v1</small></div>
+    <div class="ora"><b id="ora">00:00:00</b><span id="data"></span></div>
+  </div>
+
+  <div class="col sx">
+    <div class="pan"><h3>SISTEMA <i id="rete">ONLINE</i></h3>
+      <div class="riga">ATTIVITÀ NEURALE<b id="vNeur">0%</b></div><div class="barra"><div id="bNeur"></div></div>
+      <div class="riga">CARICO ELABORAZIONE<b id="vCar">0%</b></div><div class="barra"><div id="bCar"></div></div>
+      <div class="riga">LATENZA SCRIPT<b id="vLat">— ms</b></div><div class="barra"><div id="bLat"></div></div>
+      <canvas id="spark"></canvas>
+    </div>
+    <div class="pan"><h3>SESSIONE</h3>
+      <div class="riga">DOMANDE<b id="vDom">0</b></div>
+      <div class="riga">ASCOLTO CONTINUO<b id="vEar">OFF</b></div>
+      <div class="riga">VOCE<b id="vVoc">ON</b></div>
+      <div class="riga">MODELLO<b>GEMINI</b></div>
+    </div>
+    <div class="pan grow"><h3>REGISTRO EVENTI <i>LIVE</i></h3><div id="reg"></div></div>
+  </div>
+
+  <div class="centro">
+    <canvas id="core"></canvas>
+    <div id="statoBig">SISTEMI ONLINE</div>
+  </div>
+
+  <div class="col dx">
+    <div class="pan grow"><h3>CONVERSAZIONE <i id="nMsg">0 MSG</i></h3><div id="chat"></div></div>
+  </div>
+
+  <div class="bot">
+    <form id="form" autocomplete="off">
+      <input id="testo" type="text" placeholder="Scrivi a Jarvis, oppure premi SPAZIO per parlare…">
+      <button type="submit">INVIA</button>
+    </form>
+    <button id="mic" type="button">● PARLA</button>
+    <button id="ear" type="button">👂 EHI JARVIS</button>
+    <button id="vol" type="button">VOCE ON</button>
+    <button id="imp" type="button">IMPOSTAZIONI</button>
+    <div class="hint"><kbd>SPAZIO</kbd> parla · <kbd>/</kbd> scrivi · <kbd>F</kbd> schermo intero</div>
+  </div>
+</div>
+
+<div id="setup"><div class="box">
+  <h2>IMPOSTAZIONI</h2>
+  <label for="url">URL DELLO SCRIPT (APPLICAZIONE WEB)</label>
+  <input id="url" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+  <label for="pwd">PASSWORD</label>
+  <input id="pwd" type="password" autocomplete="off">
+  <label for="voce">VOCE</label>
+  <select id="voce"></select>
+  <div class="az"><button type="button" id="prova">PROVA VOCE</button><button type="button" id="salva" class="on">SALVA</button></div>
+  <div class="nota">URL e password restano salvati solo in questo browser. Per il microfono usa Google Chrome.</div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CFG_KEY='jarvis_cfg_v1';
+let cfg={url:'',pwd:'',voce:''};
+try{cfg=Object.assign(cfg,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'))}catch(e){}
+function salvaCfg(){try{localStorage.setItem(CFG_KEY,JSON.stringify(cfg))}catch(e){}}
+
+/* ---------- STATO ---------- */
+const ETICHETTE={idle:'SISTEMI ONLINE',ascolto:'IN ASCOLTO',pensa:'ELABORAZIONE IN CORSO',parla:'RISPOSTA IN CORSO'};
+const HUE={idle:192,ascolto:150,pensa:38,parla:188};
+let stato='idle',nDom=0,nMsg=0,lat=0;
+function setStato(s){
+  stato=s;$('statoBig').textContent=ETICHETTE[s];
+  $('mic').classList.toggle('on',s==='ascolto');$('mic').textContent=s==='ascolto'?'■ STOP':'● PARLA';
+  log(ETICHETTE[s]);
+}
+function log(t){
+  const r=$('reg'),d=document.createElement('div'),o=new Date();
+  d.innerHTML='<span>'+o.toTimeString().slice(0,8)+'</span> '+t.replace(/</g,'&lt;');
+  r.appendChild(d);while(r.children.length>40)r.removeChild(r.firstChild);
+}
+function msg(chi,testo){
+  const d=document.createElement('div');d.className='m '+chi;
+  const s=document.createElement('small');s.textContent=chi==='tu'?'TU':chi==='jv'?'JARVIS':'SISTEMA';
+  d.appendChild(s);d.appendChild(document.createTextNode(testo));
+  const c=$('chat');c.appendChild(d);c.scrollTop=c.scrollHeight;
+  $('nMsg').textContent=(++nMsg)+' MSG';
+}
+
+/* ---------- CHIAMATA ALLO SCRIPT ---------- */
+async function chiedi(testo){
+  testo=(testo||'').trim();if(!testo)return;
+  msg('tu',testo);nDom++;$('vDom').textContent=nDom;
+  if(!cfg.url||!cfg.pwd){msg('sys','Inserisci prima URL e password nelle impostazioni.');apriSetup();setStato('idle');return}
+  setStato('pensa');const t0=performance.now();
+  try{
+    const r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({password:cfg.pwd,domanda:testo})});
+    const raw=await r.text();let ris=raw;
+    try{const j=JSON.parse(raw);ris=j.risposta||j.reply||j.testo||j.answer||j.errore||j.error||raw}catch(e){}
+    lat=Math.round(performance.now()-t0);
+    ris=String(ris).trim()||'Nessuna risposta.';
+    msg('jv',ris);parla(ris);
+  }catch(e){msg('sys','Errore di connessione allo script.');log('ERRORE RETE');setStato('idle');riprendi()}
+}
+
+/* ---------- VOCE ---------- */
+let muto=false,tokVoce=0;
+function parla(testo){
+  fermaRec();
+  if(muto||!window.speechSynthesis){setStato('idle');riprendi();return}
+  speechSynthesis.cancel();const tok=++tokVoce;
+  const pezzi=testo.replace(/[*_`#>]/g,'').match(/[^.!?\n]+[.!?]*/g)||[testo];
+  const voce=speechSynthesis.getVoices().find(v=>v.name===cfg.voce);let i=0;
+  const next=()=>{
+    if(tok!==tokVoce)return;
+    if(i>=pezzi.length){setStato('idle');riprendi();return}
+    const p=pezzi[i++].trim();if(!p){next();return}
+    const u=new SpeechSynthesisUtterance(p);u.lang='it-IT';if(voce)u.voice=voce;
+    u.onstart=()=>{if(tok===tokVoce&&stato!=='parla')setStato('parla')};u.onend=next;u.onerror=next;
+    speechSynthesis.speak(u);
+  };next();
+}
+
+/* ---------- ASCOLTO ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,wake=false,attesa=false,tAttesa=null;
+function fermaRec(){if(rec){rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort()}catch(e){}rec=null}}
+function riprendi(){if(wake&&stato==='idle')avvia('wake')}
+function avvia(modo){
+  if(!SR){msg('sys','Riconoscimento vocale non supportato: usa Google Chrome.');wake=false;agg();return}
+  fermaRec();const r=new SR();rec=r;r.lang='it-IT';r.interimResults=false;r.continuous=(modo==='wake');
+  r.onstart=()=>{if(modo==='mic')setStato('ascolto')};
+  r.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal)continue;
+      const t=e.results[i][0].transcript.trim();
+      if(modo==='mic'){fermaRec();chiedi(t);return}
+      if(attesa){attesa=false;clearTimeout(tAttesa);fermaRec();chiedi(t);return}
+      const k=t.toLowerCase().indexOf('jarvis');
+      if(k>=0){
+        const resto=t.slice(k+6).replace(/^[\s,.!?:;-]+/,'');
+        if(resto.length>2){fermaRec();chiedi(resto);return}
+        attesa=true;setStato('ascolto');
+        clearTimeout(tAttesa);tAttesa=setTimeout(()=>{attesa=false;if(stato==='ascolto')setStato('idle')},8000);
+      }
+    }
+  };
+  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){wake=false;agg();fermaRec();setStato('idle');msg('sys','Microfono bloccato: consenti il permesso al sito in Chrome.')}};
+  r.onend=()=>{
+    if(rec!==r)return;
+    if(modo==='wake'&&wake){setTimeout(()=>{if(rec===r&&wake)avvia('wake')},300)}
+    else{rec=null;if(stato==='ascolto'&&!attesa)setStato('idle');riprendi()}
+  };
+  try{r.start()}catch(e){}
+}
+
+/* ---------- COMANDI ---------- */
+function agg(){
+  $('ear').classList.toggle('on',wake);$('vEar').textContent=wake?'ON':'OFF';
+  $('vol').classList.toggle('on',muto);$('vol').textContent=muto?'VOCE OFF':'VOCE ON';$('vVoc').textContent=muto?'OFF':'ON';
+}
+function toggleMic(){
+  if(stato==='ascolto'){fermaRec();setStato('idle');riprendi();return}
+  speechSynthesis&&speechSynthesis.cancel();tokVoce++;avvia('mic');
+}
+$('mic').onclick=toggleMic;
+$('ear').onclick=()=>{wake=!wake;agg();attesa=false;if(wake){msg('sys','Dì "Ehi Jarvis" seguito dalla domanda. Tieni la scheda aperta.');setStato('idle');avvia('wake')}else{fermaRec();setStato('idle')}};
+$('vol').onclick=()=>{muto=!muto;agg();if(muto){tokVoce++;speechSynthesis&&speechSynthesis.cancel();if(stato==='parla'){setStato('idle');riprendi()}}};
+$('form').onsubmit=e=>{e.preventDefault();const v=$('testo').value;$('testo').value='';chiedi(v)};
+addEventListener('keydown',e=>{
+  if(document.activeElement===$('testo')||$('setup').classList.contains('aperto')){if(e.key==='Escape')document.activeElement.blur();return}
+  if(e.code==='Space'){e.preventDefault();toggleMic()}
+  else if(e.key==='/'){e.preventDefault();$('testo').focus()}
+  else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+});
+
+/* ---------- IMPOSTAZIONI ---------- */
+function popolaVoci(){
+  if(!window.speechSynthesis)return;const sel=$('voce'),vs=speechSynthesis.getVoices();
+  const it=vs.filter(v=>(v.lang||'').toLowerCase().startsWith('it')),lista=it.length?it:vs;sel.innerHTML='';
+  lista.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});
+  if(cfg.voce)sel.value=cfg.voce;
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=popolaVoci;popolaVoci()}
+function apriSetup(){$('url').value=cfg.url;$('pwd').value=cfg.pwd;popolaVoci();$('setup').classList.add('aperto')}
+$('imp').onclick=apriSetup;
+$('salva').onclick=()=>{cfg.url=$('url').value.trim();cfg.pwd=$('pwd').value;cfg.voce=$('voce').value;salvaCfg();$('setup').classList.remove('aperto')};
+$('prova').onclick=()=>{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Sistemi online.');u.lang='it-IT';const v=speechSynthesis.getVoices().find(x=>x.name===$('voce').value);if(v)u.voice=v;speechSynthesis.speak(u)};
+
+/* ---------- OROLOGIO ---------- */
+setInterval(()=>{
+  const o=new Date();$('ora').textContent=o.toTimeString().slice(0,8);
+  $('data').textContent=o.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+},500);
+
+/* ---------- SFONDO: griglia + particelle ---------- */
+const bg=$('bg'),bx=bg.getContext('2d');let BW=0,BH=0;const part=[];
+function rBg(){const d=Math.min(devicePixelRatio||1,2);BW=innerWidth;BH=innerHeight;bg.width=BW*d;bg.height=BH*d;bx.setTransform(d,0,0,d,0,0);
+  part.length=0;for(let i=0;i<Math.min(110,BW*BH/14000);i++)part.push({x:Math.random()*BW,y:Math.random()*BH,v:.1+Math.random()*.4,s:.6+Math.random()*1.6})}
+addEventListener('resize',rBg);rBg();
+
+/* ---------- CENTRO: reattore, spettro, rete neurale ---------- */
+const cv=$('core'),cx=cv.getContext('2d');let W=0,H=0,U=0;
+function rCore(){const d=Math.min(devicePixelRatio||1,2),b=cv.getBoundingClientRect();W=b.width;H=b.height;cv.width=Math.max(1,W*d);cv.height=Math.max(1,H*d);cx.setTransform(d,0,0,d,0,0);U=Math.min(W,H)*.42}
+addEventListener('resize',rCore);if(window.ResizeObserver)new ResizeObserver(rCore).observe(cv);rCore();
+
+const N=90,nodi=[],impulsi=[];
+for(let i=0;i<N;i++){const u=Math.random()*2-1,a=Math.random()*6.283,s=Math.sqrt(1-u*u),r=.78+Math.random()*.38;nodi.push({x:s*Math.cos(a)*r,y:u*r,z:s*Math.sin(a)*r,f:0})}
+const BAR=96,spettro=new Array(BAR).fill(0);
+let hue=192,en=.35,ang=0,spark=new Array(60).fill(0),tSpark=0;
+
+function arco(X,Y,r,a0,a1,w,c){cx.beginPath();cx.arc(X,Y,r,a0,a1);cx.lineWidth=w;cx.strokeStyle=c;cx.stroke()}
+
+function frame(t){
+  requestAnimationFrame(frame);
+  hue+=(HUE[stato]-hue)*.05;
+  const tgt={idle:.3,ascolto:.65,pensa:.95,parla:1}[stato];en+=(tgt-en)*.05;ang+=.0016+.006*en;
+  document.documentElement.style.setProperty('--h',hue.toFixed(1));
+  const col=(a,l)=>`hsla(${hue},100%,${l||60}%,${a})`;
+  const voce=stato==='parla'?.45+.55*Math.abs(Math.sin(t/90)*Math.sin(t/210+1)):stato==='ascolto'?.25+.3*Math.abs(Math.sin(t/130)):0;
+
+  /* sfondo */
+  bx.clearRect(0,0,BW,BH);
+  bx.strokeStyle=col(.035);bx.lineWidth=1;bx.beginPath();
+  const g=60,off=(t/80)%g;
+  for(let x=-off;x<BW;x+=g){bx.moveTo(x,0);bx.lineTo(x,BH)}for(let y=-off;y<BH;y+=g){bx.moveTo(0,y);bx.lineTo(BW,y)}bx.stroke();
+  bx.fillStyle=col(.55,70);
+  for(const p of part){p.y-=p.v;if(p.y<-4){p.y=BH+4;p.x=Math.random()*BW}bx.globalAlpha=.25+.4*Math.sin(t/900+p.x);bx.fillRect(p.x,p.y,p.s,p.s)}
+  bx.globalAlpha=1;
+
+  /* centro */
+  if(!W)return;cx.clearRect(0,0,W,H);const X=W/2,Y=H/2;
+  // alone
+  let gr=cx.createRadialGradient(X,Y,0,X,Y,U*1.35);
+  gr.addColorStop(0,col(.38*en+.08,62));gr.addColorStop(.4,col(.08+.07*en,50));gr.addColorStop(1,col(0,50));
+  cx.fillStyle=gr;cx.beginPath();cx.arc(X,Y,U*1.35,0,6.283);cx.fill();
+
+  // spettro circolare
+  for(let i=0;i<BAR;i++){
+    const tg=(stato==='idle'?.05+.04*Math.sin(t/600+i*.3):voce*(.35+.65*Math.abs(Math.sin(i*.9+t/110)*Math.cos(i*.31-t/170))))*U*.34+U*.01;
+    spettro[i]+=(tg-spettro[i])*.3;
+  }
+  cx.save();cx.translate(X,Y);cx.shadowBlur=8;cx.shadowColor=col(.9);cx.lineCap='round';cx.lineWidth=2.4;cx.strokeStyle=col(.9,62);
+  const R0=U*.5;
+  for(let i=0;i<BAR;i++){const a=i/BAR*6.283-1.5708,l=spettro[i];cx.beginPath();cx.moveTo(Math.cos(a)*R0,Math.sin(a)*R0);cx.lineTo(Math.cos(a)*(R0+l),Math.sin(a)*(R0+l));cx.stroke()}
+  cx.restore();
+
+  // nucleo
+  const rc=U*(.17+.025*en+.07*voce);
+  gr=cx.createRadialGradient(X,Y,0,X,Y,rc*1.6);
+  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.3,col(.95,78));gr.addColorStop(.7,col(.35,55));gr.addColorStop(1,col(0,50));
+  cx.fillStyle=gr;cx.beginPath();cx.arc(X,Y,rc*1.6,0,6.283);cx.fill();
+
+  // anelli
+  cx.save();cx.shadowBlur=12;cx.shadowColor=col(.9);
+  cx.setLineDash([]);arco(X,Y,U*.25,0,6.283,1.5,col(.55));
+  cx.setLineDash([46,14]);cx.lineDashOffset=-ang*500;arco(X,Y,U*.33,0,6.283,2.4,col(.8));
+  cx.setLineDash([4,9]);cx.lineDashOffset=ang*400;arco(X,Y,U*.42,0,6.283,1.4,col(.55));
+  cx.setLineDash([]);
+  for(let k=0;k<4;k++){const a0=ang*1.5+k*1.5708;arco(X,Y,U*.88,a0,a0+.9,3.4,col(.9))}
+  for(let k=0;k<3;k++){const a0=-ang*2.1+k*2.0944;arco(X,Y,U*.95,a0,a0+.45,2,col(.7))}
+  arco(X,Y,U*1.02,0,6.283,1,col(.18));
+  cx.restore();
+  // tacche
+  cx.save();cx.translate(X,Y);cx.rotate(-ang*.8);cx.strokeStyle=col(.5);
+  for(let i=0;i<120;i++){const a=i/120*6.283,big=i%10===0,l=big?U*.07:U*.032,r1=U*1.08;cx.lineWidth=big?1.8:.8;cx.beginPath();cx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1);cx.lineTo(Math.cos(a)*(r1+l),Math.sin(a)*(r1+l));cx.stroke()}
+  cx.restore();
+  // mirino
+  cx.strokeStyle=col(.25);cx.lineWidth=1;cx.beginPath();
+  cx.moveTo(X-U*1.3,Y);cx.lineTo(X-U*1.15,Y);cx.moveTo(X+U*1.15,Y);cx.lineTo(X+U*1.3,Y);
+  cx.moveTo(X,Y-U*1.3);cx.lineTo(X,Y-U*1.15);cx.moveTo(X,Y+U*1.15);cx.lineTo(X,Y+U*1.3);cx.stroke();
+
+  // rete neurale 3D
+  const ca=Math.cos(ang*.7),sa=Math.sin(ang*.7),tilt=.4,ct=Math.cos(tilt),st=Math.sin(tilt);
+  if(Math.random()<.03+.2*en){const k=(Math.random()*N)|0;nodi[k].f=1}
+  const P=nodi.map(n=>{const x1=n.x*ca+n.z*sa,z1=-n.x*sa+n.z*ca,y2=n.y*ct-z1*st,z2=n.y*st+z1*ct,p=2/(2-z2);n.f*=.95;return{x:X+x1*U*p,y:Y+y2*U*p,p,f:n.f,ox:x1,oy:y2,oz:z2}});
+  const lati=[];
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+    const dx=P[i].ox-P[j].ox,dy=P[i].oy-P[j].oy,dz=P[i].oz-P[j].oz,d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    if(d<.5){lati.push([i,j]);const a=(1-d/.5)*(.1+.28*en)+Math.max(P[i].f,P[j].f)*.55;cx.strokeStyle=col(Math.min(a,.9));cx.lineWidth=1;cx.beginPath();cx.moveTo(P[i].x,P[i].y);cx.lineTo(P[j].x,P[j].y);cx.stroke()}
+  }
+  // impulsi che viaggiano lungo i collegamenti
+  if(lati.length&&Math.random()<.1+.5*en&&impulsi.length<40){const l=lati[(Math.random()*lati.length)|0];impulsi.push({a:l[0],b:l[1],t:0})}
+  for(let i=impulsi.length-1;i>=0;i--){
+    const p=impulsi[i];p.t+=.03+.02*en;if(p.t>=1){nodi[p.b].f=1;impulsi.splice(i,1);continue}
+    const A=P[p.a],B=P[p.b],x=A.x+(B.x-A.x)*p.t,y=A.y+(B.y-A.y)*p.t;
+    cx.fillStyle='rgba(255,255,255,.95)';cx.shadowBlur=10;cx.shadowColor=col(1);cx.beginPath();cx.arc(x,y,2.2,0,6.283);cx.fill();cx.shadowBlur=0;
+  }
+  for(let i=0;i<N;i++){const q=P[i],r=(1.5+q.f*3.6)*q.p;cx.fillStyle=col(Math.min(.45+q.f+.2*en,1),72);cx.beginPath();cx.arc(q.x,q.y,r,0,6.283);cx.fill()}
+
+  /* pannelli */
+  tSpark+=1;if(tSpark>6){tSpark=0;spark.push(en*.7+Math.random()*.25);spark.shift()}
+  if((t|0)%300<17){
+    const ne=Math.min(99,Math.round(en*75+Math.random()*8)),ca2=Math.min(99,Math.round((stato==='pensa'?70:stato==='parla'?45:12)+Math.random()*12));
+    $('vNeur').textContent=ne+'%';$('bNeur').style.width=ne+'%';
+    $('vCar').textContent=ca2+'%';$('bCar').style.width=ca2+'%';
+    $('vLat').textContent=lat?lat+' ms':'— ms';$('bLat').style.width=lat?Math.min(100,lat/40)+'%':'0%';
+  }
+  const s=$('spark'),sc=s.getContext('2d'),sw=s.clientWidth,sh=s.clientHeight;
+  if(s.width!==sw*2){s.width=sw*2;s.height=sh*2}
+  sc.setTransform(2,0,0,2,0,0);sc.clearRect(0,0,sw,sh);sc.strokeStyle=col(.9);sc.lineWidth=1.4;sc.shadowBlur=6;sc.shadowColor=col(.9);sc.beginPath();
+  spark.forEach((v,i)=>{const x=i/(spark.length-1)*sw,y=sh-4-v*(sh-8);i?sc.lineTo(x,y):sc.moveTo(x,y)});sc.stroke();
+}
+requestAnimationFrame(frame);
+
+/* ---------- AVVIO ---------- */
+const passi=['CARICO NUCLEO','COLLEGO RETE NEURALE','SINCRONIZZO VOCE','VERIFICO CONNESSIONE','SISTEMI ONLINE'];
+let pi=0;
+const bt=setInterval(()=>{
+  pi++;$('bootBar').style.width=Math.min(100,pi*22)+'%';$('bootL').textContent=passi[Math.min(pi-1,passi.length-1)];
+  if(pi>=5){clearInterval(bt);setTimeout(()=>{$('boot').classList.add('via');$('hud').classList.remove('nascosto');
+    agg();log('SISTEMI ONLINE');msg('sys','Sistemi online. Premi SPAZIO per parlare.');if(!cfg.url||!cfg.pwd)apriSetup();
+    setTimeout(()=>{if(window.speechSynthesis&&!muto){const u=new SpeechSynthesisUtterance('Sistemi online.');u.lang='it-IT';const v=speechSynthesis.getVoices().find(x=>x.name===cfg.voce);if(v)u.voice=v;speechSynthesis.speak(u)}},500);
+  },400)}
+},450);
+</script>
+</body>
+</html>
